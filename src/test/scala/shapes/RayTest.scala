@@ -18,7 +18,6 @@ class RayTest extends FunSuite {
     val ray = new Ray(new Point(1,1))
     val line = new LineSegment(new Point(2,1), new Point(4,3))
 
-    println("Ray intercept: ")
     assert(ray.intercept(line))
   }
 }

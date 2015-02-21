@@ -38,6 +38,10 @@ class LineSegmentTest extends FunSuite {
   }
 
   test("Assert that fixture lines are parallel") {
-    //assert(Fixtures.lineXequals1.intercept(Fixtures.lineXequalsMinus1))
+    assert(Fixtures.lineXequals1.intercept(Fixtures.lineXequalsMinus1) == false)
+  }
+
+  test("Assert that fixture lines intercept") {
+    assert(Fixtures.lineXequalsY.intercept(Fixtures.lineXequalsMinusY))
   }
 }

@@ -14,7 +14,7 @@ object Fixtures {
 
   val lineXequalsMinus1 = new LineSegment(new Point(-1,1), new Point(-1, 0))
 
-  val lineXequalsY = new LineSegment(new Point(1,1), new Point(2,2))
+  val lineXequalsY = new LineSegment(new Point(0,0), new Point(2,2))
 
   val lineXequalsMinusY = new LineSegment(new Point(-1,1), new Point(0,0))
 }

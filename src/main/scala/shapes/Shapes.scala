@@ -14,6 +14,16 @@ trait Segment {
 case class LineSegment(starting: Point, second: Point) extends Segment {
   require(starting != null && second != null && starting != second)
 
+
+  def intercept(line: LineSegment): Boolean = {
+    val point = interceptAtAny(line)
+    if (point != None) {
+      contains(point.get) && line.contains(point.get)
+    } else {
+      false
+    }
+  }
+
   def intercept(raySegment: Ray): Boolean = {
     val point = interceptAtAny(raySegment)
     println("Point from intersection: " + point)
@@ -21,6 +31,19 @@ case class LineSegment(starting: Point, second: Point) extends Segment {
       contains(point.get) && raySegment.contains(point.get)
     } else {
       false
+    }
+  }
+
+  def interceptAtAny(lineSegment: LineSegment): Option[Point] = {
+    val line = GeometryUtils.getLine(starting, second)
+    val ray = GeometryUtils.getLine(lineSegment.starting, lineSegment.second)
+
+    val det = line.A * ray.B - ray.A * line.B
+    if (det == 0) None
+    else {
+      val x = (ray.B * line.C - line.B * ray.C)/det
+      val y = (line.A*ray.C - ray.A*line.C)/det
+      Some(new Point(x,y))
     }
   }
 
@@ -51,7 +74,7 @@ case class LineSegment(starting: Point, second: Point) extends Segment {
 
 object GeometryUtils {
 
-  def getLine(starting: Point): Line = {
+  def getLine(starting: Point): Equation = {
     getLine(starting, new Point(starting.x + 1, starting.y))
   }
 
@@ -60,19 +83,19 @@ object GeometryUtils {
    * Generates a Line parallel to X axis based on the starting point
    * @return Line coefficients as stated in http://community.topcoder.com/tc?module=Static&d1=tutorials&d2=geometry2
    */
-  def getLine(starting: Point, ending: Point): Line = {
+  def getLine(starting: Point, ending: Point): Equation = {
     val A = ending.y.toDouble - starting.y.toDouble
     val B = starting.x.toDouble - ending.x.toDouble
     val C = A * starting.x.toDouble + B * starting.y.toDouble
 
     println("A, B, C: " + A + ", " + B + ", " + C)
-    new Line(A,B,C)
+    new Equation(A,B,C)
   }
 }
 
-class Line(val A: Double, val B: Double, val C: Double) {
+class Equation(val A: Double, val B: Double, val C: Double) {
   override def equals(o: Any) = o match {
-    case that: Line => this.A == that.A && this.B == that.B && this.C == that.C
+    case that: Equation => this.A == that.A && this.B == that.B && this.C == that.C
     case _ => false
   }
 }
@@ -80,7 +103,6 @@ class Line(val A: Double, val B: Double, val C: Double) {
 
 case class Ray(starting: Point) {
   require(starting != null)
-  // check wether a point belongs to a ray
 
   def intercept(lineSegment: Segment): Boolean = {
     lineSegment.intercept(this)
