@@ -6,6 +6,8 @@ package shapes
  */
 object Fixtures {
 
+  val precision = 0.005
+
   val lineYequals1 = new LineSegment(new Point(1,1), new Point(2,1))
 
   val lineYequalsMinus1 = new LineSegment(new Point(1,-1), new Point(2,-1))
@@ -65,4 +67,6 @@ object Fixtures {
     pointMinus1Minus1, pointMinus20, pointMinus10, point02)
 
   val complex = new Polygon(p1, p2, p3, p4, p5, p6, p7, p8, p9, p1)
+
+  val triangleTranslated = new Location(point20, triangle)
 }

@@ -12,6 +12,30 @@ trait Segment {
   def contains(point: Point): Boolean
 }
 
+trait Shape {
+  val points: Seq[Point]
+  def area(): Double
+}
+
+
+case class Location(point: Point, shape: Shape) extends Shape {
+  require(shape != null, "null shape in location")
+  override val points = shape.points.map(p => new Point((point.x + p.x), (point.y + p.y)))
+  override def area(): Double = { shape.area() }
+}
+
+case class Group(val children: Shape*) extends Shape {
+  require(children != null, "null children in " + getClass.getSimpleName)
+  require(! children.contains(null), "null child in " + getClass.getSimpleName)
+
+  override val points = Seq[Point]()
+
+  override def area(): Double = {
+    children.foldLeft(0.0)((acc, shape) => acc + shape.area())
+    //0.0
+  }
+}
+
 case class LineSegment(starting: Point, second: Point) extends Segment {
   require(starting != null && second != null && starting != second)
 
@@ -138,7 +162,7 @@ case class Ray(starting: Point) {
   }
 }
 
-case class Polygon(points: Point*) {
+case class Polygon(points: Point*) extends Shape {
   require(points.size > 3)
   require(points.toList(0) == points.last)
 
@@ -189,7 +213,9 @@ case class Polygon(points: Point*) {
       if (encompass(p)) counter += 1
     }
 
-    (counter/attempts) * GeometryUtils.boundingBoxArea(box._1, box._2)
+    val bboxarea = GeometryUtils.boundingBoxArea(box._1, box._2)
+    //println("bbox area: " + bboxarea)
+    (counter/attempts) * bboxarea
   }
 
 
@@ -198,17 +224,6 @@ case class Polygon(points: Point*) {
   }
 
   def boundingBox(): (Point, Point) = {
-    val bounds = mutable.Map("xmin"-> Int.MaxValue.toDouble ,"ymin" -> Int.MaxValue.toDouble,"xmax" -> Int.MinValue.toDouble,"ymax" -> Int.MinValue.toDouble)
-    points.foldLeft(bounds)((bound, point) => findBounds(bounds, point))
-    (new Point(bounds("xmin"), bounds("ymin")),  new Point(bounds("xmax"), bounds("ymax")))
-  }
-
-  private def findBounds(bounds: mutable.Map[String, Double], point: Point): mutable.Map[String, Double] = {
-    bounds("xmin") = Math.min(bounds("xmin"), point.x)
-    bounds("ymin") = Math.min(bounds("ymin"), point.y)
-    bounds("xmax") = Math.max(bounds("xmax"), point.x)
-    bounds("ymax") = Math.max(bounds("ymax"), point.y)
-    
-    bounds
+    BoundingBox.apply(this)
   }
 }
