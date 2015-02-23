@@ -1,6 +1,7 @@
 package edu.luc.cs.pl.montecarlo
 package shapes
 
+import scala.collection.mutable
 /**
  * Created by sauloaguiar on 2/18/15.
  */
@@ -14,7 +15,6 @@ trait Segment {
 case class LineSegment(starting: Point, second: Point) extends Segment {
   require(starting != null && second != null && starting != second)
 
-
   def intercept(line: LineSegment): Boolean = {
     val point = interceptAtAny(line)
     if (point != None) {
@@ -26,7 +26,7 @@ case class LineSegment(starting: Point, second: Point) extends Segment {
 
   def intercept(raySegment: Ray): Boolean = {
     val point = interceptAtAny(raySegment)
-    println("Point from intersection: " + point)
+    //println("Point from intersection: " + point)
     if (point != None){
       contains(point.get) && raySegment.contains(point.get)
     } else {
@@ -66,9 +66,22 @@ case class LineSegment(starting: Point, second: Point) extends Segment {
     }
   }
 
+  /*
+  aquilo, até agora, resolveu tudo.
+
+  1) vejo se o pt do ray tá sobre um dos lados do polígono. Se estiver, já retorna true (contido);
+  2) senão testo os casos pra ver se é vértice.
+  */
+
   def contains(point: Point): Boolean = {
+    val line = GeometryUtils.getLine(starting, second)
     (math.min(starting.x, second.x) <= point.x &&  point.x <= math.max(starting.x, second.x)) &&
-      (math.min(starting.y, second.y) <= point.y && point.y <= math.max(starting.y, second.y))
+      (math.min(starting.y, second.y) <= point.y && point.y <= math.max(starting.y, second.y)) &&
+        ((line.A * point.x + line.B * point.y) == line.C)
+  }
+
+  def contains2(point: Point): Boolean = {
+    false
   }
 }
 
@@ -88,9 +101,21 @@ object GeometryUtils {
     val B = starting.x.toDouble - ending.x.toDouble
     val C = A * starting.x.toDouble + B * starting.y.toDouble
 
-    println("A, B, C: " + A + ", " + B + ", " + C)
+    //println("A, B, C: " + A + ", " + B + ", " + C)
     new Equation(A,B,C)
   }
+
+  /**
+   * Calculates the area of a bounding box delimited by points min an max
+   * A = width * height
+   * @param min
+   * @param max
+   * @return
+   */
+  def boundingBoxArea(min: Point, max: Point): Double = {
+    ((max.x - min.x) * (max.y - min.y))
+  }
+
 }
 
 class Equation(val A: Double, val B: Double, val C: Double) {
@@ -99,7 +124,6 @@ class Equation(val A: Double, val B: Double, val C: Double) {
     case _ => false
   }
 }
-
 
 case class Ray(starting: Point) {
   require(starting != null)
@@ -112,8 +136,79 @@ case class Ray(starting: Point) {
     val line = GeometryUtils.getLine(starting)
     (point.x >= starting.x && point.y >= starting.y) && ((line.A * point.x + line.B * point.y) == line.C)
   }
-
-
 }
 
+case class Polygon(points: Point*) {
+  require(points.size > 3)
+  require(points.toList(0) == points.last)
 
+  def getLines(): List[LineSegment] = {
+    var lineSegmentList: List[LineSegment] = List()
+    val it = points.iterator
+    var currentPoint = it.next()
+    while (it.hasNext) {
+      val nextPoint = it.next()
+      lineSegmentList = lineSegmentList :+ new LineSegment(currentPoint, nextPoint)
+      currentPoint = nextPoint
+    }
+    lineSegmentList
+  }
+
+  def pointLaysOnAnyEdge(point: Point): Boolean = {
+    getLines().exists(edge => edge.contains(point))
+  }
+
+  def encompass(point: Point): Boolean = {
+    val edge = pointLaysOnAnyEdge(point)
+    val inside = pointLiesInsidePolygon(point)
+     edge || inside
+  }
+
+  def pointLiesInsidePolygon(point: Point): Boolean = {
+    val ray = new Ray(point)
+    val counter = getLines().foldLeft(0) { (acc, edge) =>
+      if (edge.intercept(ray)) {
+        acc + 1
+      } else {
+        acc
+      }
+    }
+    if (counter > 0 && counter % 2 != 0) true
+    else false
+  }
+
+  def area(): Double = {
+    val box = boundingBox()
+    val attempts = 1000000.0
+    var counter = 0
+    for ( step <- 1 to attempts.toInt) {
+      val x = random(box._1.x, box._2.x)
+      val y = random(box._1.y, box._2.y)
+      val p = new Point(x, y)
+      //println("Random point: " + p)
+      if (encompass(p)) counter += 1
+    }
+
+    (counter/attempts) * GeometryUtils.boundingBoxArea(box._1, box._2)
+  }
+
+
+  private def random(min: Double, max: Double): Double = {
+    scala.util.Random.nextDouble() * (min + (max - min))
+  }
+
+  def boundingBox(): (Point, Point) = {
+    val bounds = mutable.Map("xmin"-> Int.MaxValue.toDouble ,"ymin" -> Int.MaxValue.toDouble,"xmax" -> Int.MinValue.toDouble,"ymax" -> Int.MinValue.toDouble)
+    points.foldLeft(bounds)((bound, point) => findBounds(bounds, point))
+    (new Point(bounds("xmin"), bounds("ymin")),  new Point(bounds("xmax"), bounds("ymax")))
+  }
+
+  private def findBounds(bounds: mutable.Map[String, Double], point: Point): mutable.Map[String, Double] = {
+    bounds("xmin") = Math.min(bounds("xmin"), point.x)
+    bounds("ymin") = Math.min(bounds("ymin"), point.y)
+    bounds("xmax") = Math.max(bounds("xmax"), point.x)
+    bounds("ymax") = Math.max(bounds("ymax"), point.y)
+    
+    bounds
+  }
+}
