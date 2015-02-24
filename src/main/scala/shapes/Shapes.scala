@@ -90,13 +90,6 @@ case class LineSegment(starting: Point, second: Point) extends Segment {
     }
   }
 
-  /*
-  aquilo, até agora, resolveu tudo.
-
-  1) vejo se o pt do ray tá sobre um dos lados do polígono. Se estiver, já retorna true (contido);
-  2) senão testo os casos pra ver se é vértice.
-  */
-
   def contains(point: Point): Boolean = {
     val line = GeometryUtils.getLine(starting, second)
     (math.min(starting.x, second.x) <= point.x &&  point.x <= math.max(starting.x, second.x)) &&
@@ -209,13 +202,10 @@ case class Polygon(points: Point*) extends Shape {
       val x = random(box._1.x, box._2.x)
       val y = random(box._1.y, box._2.y)
       val p = new Point(x, y)
-      //println("Random point: " + p)
       if (encompass(p)) counter += 1
     }
 
-    val bboxarea = GeometryUtils.boundingBoxArea(box._1, box._2)
-    //println("bbox area: " + bboxarea)
-    (counter/attempts) * bboxarea
+    (counter/attempts) * GeometryUtils.boundingBoxArea(box._1, box._2)
   }
 
 

@@ -6,7 +6,7 @@ package shapes
  */
 object Fixtures {
 
-  val precision = 0.005
+  val precision = 0.01
 
   val lineYequals1 = new LineSegment(new Point(1,1), new Point(2,1))
 

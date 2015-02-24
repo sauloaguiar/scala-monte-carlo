@@ -29,13 +29,5 @@ object BoundingBox {
     bounds
   }
 
-  /*
-  case Polygon(points @ _*) =>
-      (new Point(0,0), new Point(0,0))
-    case Location(point, shape) =>
-      val (point1, point2) = this.apply(shape)
-
-      (new Point(point.x + point1.x , point.y + point1.y), new Point(point.x + point2.x,point.y + point2.y))
-   */
 }
 

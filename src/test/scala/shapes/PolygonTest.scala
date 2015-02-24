@@ -88,7 +88,6 @@ class PolygonTest extends FunSuite {
   test("Assert that complex polygon has a good approximation area") {
     val complex = Fixtures.complex
     val area = complex.area()
-    println("Area: " + area)
     assert(math.abs(1320 - area) < Fixtures.precision)
   }
 
