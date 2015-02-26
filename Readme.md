@@ -10,4 +10,5 @@ To *discover whether a point lies inside a polygon* I divide the into two steps:
 the **first** is to determine if the point belongs to any LineSegment of the Polygon, and the **second** is to use ray shooting technique.
 The *bounding box* is computed by an object - which has a match case to cover all possible implementations of the shapes trait. This makes the code concise and easier to maintain.
 
-Finally, the *Monte Carlo method* consists of a **area** method in the trait Shape that is abstract - so it must be implemented by every Shape implementation - and this allows each polygon to deal with their own area in particular. However, we can make use of an object - as we did for bounding box - to concentrate this specific behavior and easily extent it when necessary, for instance, adding a more precise method of calculation.
+Finally, the *Monte Carlo method* consists of a **area** method in the trait Shape that is abstract - so it must be implemented by every Shape implementation - and this allows each polygon to deal with their own area in particular.
+To approach this with DRY in mind, I have an object - as we did for bounding box - to concentrate this specific behavior and easily extent it when necessary, for instance, adding a more precise method of calculation.
