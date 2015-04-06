@@ -1,7 +1,6 @@
 package edu.luc.cs.pl.montecarlo
 package shapes
 
-import scala.collection.mutable
 /**
  * Created by sauloaguiar on 2/18/15.
  */
@@ -31,7 +30,6 @@ case class Group(val children: Shape*) extends Shape {
   require(children != null, "null children in " + getClass.getSimpleName)
   require(! children.contains(null), "null child in " + getClass.getSimpleName)
 
-  //override val points = children.foldLeft(Seq[Point]())((acc, shape) => acc :+ shape.points)
   override val points = children.flatMap(shape => shape.points)
 
   override def area(): Double = {
@@ -171,17 +169,6 @@ case class Polygon(points: Point*) extends Shape {
 
   def area(): Double = {
     AreaCalculator.calculate(this)
-    /*val box = boundingBox()
-    val attempts = 1000000.0
-    var counter = 0
-    for ( step <- 1 to attempts.toInt) {
-      val x = random(box._1.x, box._2.x)
-      val y = random(box._1.y, box._2.y)
-      val p = new Point(x, y)
-      if (encompass(p)) counter += 1
-    }
-
-    (counter/attempts) * GeometryUtils.boundingBoxArea(box._1, box._2)*/
   }
 
 
